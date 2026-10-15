@@ -51,6 +51,23 @@ h1 { font-weight: 800; letter-spacing: -0.02em; }
   .ball { width: 34px; height: 34px; font-size: 14px; }
   .balls { gap: 5px; }
 }
+/* 번호판: 1~45 공을 9열 격자로 나열해 직접 누르기 */
+.st-key-ball_grid [role="toolbar"] { display: grid !important; grid-template-columns: repeat(9, minmax(0, 1fr));
+  gap: 6px; max-width: 460px; }
+.st-key-ball_grid button[data-variant="pills"] { aspect-ratio: 1; width: 100%; min-height: 0; padding: 0;
+  border-radius: 50%; justify-content: center; font-weight: 700; }
+.st-key-ball_grid button[data-variant="pills"] p { font-size: 14px; font-weight: 700; }
+.st-key-ball_grid button[aria-pressed="true"] { border-color: transparent; }
+.st-key-ball_grid button[aria-pressed="true"] p { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.35); }
+.st-key-ball_grid button[aria-pressed="true"]:nth-child(-n+10) { background: #FBC400; }
+.st-key-ball_grid button[aria-pressed="true"]:nth-child(n+11):nth-child(-n+20) { background: #69C8F2; }
+.st-key-ball_grid button[aria-pressed="true"]:nth-child(n+21):nth-child(-n+30) { background: #FF7272; }
+.st-key-ball_grid button[aria-pressed="true"]:nth-child(n+31):nth-child(-n+40) { background: #AAAAAA; }
+.st-key-ball_grid button[aria-pressed="true"]:nth-child(n+41) { background: #B0D840; }
+@media (max-width: 640px) {
+  .st-key-ball_grid [role="toolbar"] { gap: 4px; }
+  .st-key-ball_grid button[data-variant="pills"] p { font-size: 12px; }
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -279,7 +296,28 @@ with tab_bt:
 
 # ---------------------------------------------------------------- 내 번호 조회
 with tab_check:
-    mine = st.multiselect("번호 6개를 고르세요", range(1, 46), max_selections=6)
+    def _limit_six():
+        """7개째를 누르면 그 선택은 취소하고 직전 6개를 유지합니다."""
+        sel = st.session_state["mine"] or []
+        if len(sel) > 6:
+            st.session_state["mine"] = st.session_state.get("mine_prev", sel[:6])
+            st.session_state["mine_over"] = True
+        else:
+            st.session_state["mine_prev"] = list(sel)
+
+    def _clear_mine():
+        st.session_state["mine"] = []
+        st.session_state["mine_prev"] = []
+
+    with st.container(key="ball_grid"):
+        st.pills("번호 6개를 누르세요", list(range(1, 46)), selection_mode="multi",
+                 key="mine", on_change=_limit_six)
+    mine = sorted(st.session_state.get("mine") or [])
+    c1, c2 = st.columns([3, 1], vertical_alignment="center")
+    c1.caption(f"{len(mine)}/6개 선택됨 · 다시 누르면 선택이 풀립니다")
+    c2.button("모두 해제", on_click=_clear_mine, width="stretch", disabled=not mine)
+    if st.session_state.pop("mine_over", False):
+        st.toast("번호는 6개까지만 고를 수 있습니다. 다른 번호를 먼저 풀어 주세요.")
     if len(mine) == 6:
         st.markdown(balls_html(sorted(mine)), unsafe_allow_html=True)
         counts = {r: [] for r in range(1, 6)}
@@ -298,8 +336,6 @@ with tab_check:
         c1, c2 = st.columns(2)
         c1.metric("쓴 돈", won(spent))
         c2.metric("받은 돈 (세전)", won(total), f"{total / spent:.0%}", delta_color="off")
-    else:
-        st.caption(f"{len(mine)}/6개 선택됨")
 
 st.divider()
 st.caption("분석·학습용 프로그램입니다. 당첨을 보장하지 않으며, 구매는 감당할 수 있는 범위에서만 하세요. "
