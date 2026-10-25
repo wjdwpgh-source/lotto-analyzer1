@@ -113,7 +113,10 @@ ZOOM_JS = """<script>
 })();
 </script>"""
 with st.container(key="zoomfix"):  # 화면에 빈 칸이 생기지 않도록 숨김 (스크립트는 동작)
-    components.html(ZOOM_JS, height=0)
+    if hasattr(st, "iframe"):  # 최신 Streamlit (components.html은 없어질 예정)
+        st.iframe(ZOOM_JS, height=1)
+    else:                      # 예전 Streamlit
+        components.html(ZOOM_JS, height=0)
 st.markdown("<style>.st-key-zoomfix { display: none; }</style>", unsafe_allow_html=True)
 
 
@@ -194,6 +197,24 @@ tab_gen, tab_stat, tab_prob, tab_bt, tab_check = st.tabs(
 with tab_gen:
     strategy = st.selectbox("생성 방식", list(generator.STRATEGIES),
                             format_func=lambda k: generator.STRATEGIES[k])
+    if strategy == "recent5":
+        info = generator.recent_info(df)
+        hist = generator.overlap_history(df)
+        lo, hi = generator.RECENT_OVERLAP
+        with st.container(border=True):
+            r = info["rounds"]
+            st.markdown(f"**최근 5회 분석** ({r[0]}\\~{r[-1]}회)")
+            for times, title in [(3, "3번 이상 나온 번호"), (2, "2번 나온 번호"), (1, "1번 나온 번호")]:
+                sel = info["counts"][(info["counts"] >= times) if times == 3 else (info["counts"] == times)]
+                if len(sel):
+                    st.caption(f"{title} ({len(sel)}개)")
+                    st.markdown(balls_html(sorted(sel.index)), unsafe_allow_html=True)
+            st.caption(f"한 번도 안 나온 번호: {45 - len(info['pool'])}개")
+            st.caption(
+                f"만드는 규칙: 최근 5회에 나온 {len(info['pool'])}개 번호에서 {lo}\\~{hi}개 + 나머지는 안 나온 번호, "
+                f"바로 전 회차 번호는 {generator.LAST_REPEAT_MAX}개까지. 여러 번 나온 번호일수록 조금 더 자주 뽑힙니다. "
+                f"근거: 역대 회차의 {hist[lo:hi + 1].sum():.0%}가 직전 5회 번호를 {lo}\\~{hi}개 포함 "
+                f"(평균 {(hist * hist.index).sum():.1f}개 — 무작위로 뽑아도 기대값이 거의 같습니다).")
     count = st.slider("몇 게임", 1, 10, 5)
     with st.expander("고정수 · 제외수 지정"):
         fixed = st.multiselect("꼭 넣을 번호", range(1, 46), max_selections=5)
