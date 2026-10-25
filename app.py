@@ -34,10 +34,20 @@ h1 { font-weight: 800; letter-spacing: -0.02em; }
 .balls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 4px 0 2px; }
 .ball { width: 40px; height: 40px; border-radius: 50%; display: inline-flex;
   align-items: center; justify-content: center; font-weight: 800; font-size: 16px;
-  color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.35);
+  color: #000; text-shadow: 0 1px 1px rgba(255,255,255,.45);
   box-shadow: inset -3px -4px 6px rgba(0,0,0,.18), inset 3px 3px 6px rgba(255,255,255,.35); }
 .plus { font-weight: 700; opacity: .55; margin: 0 2px; }
 .meta { font-size: 13px; opacity: .7; margin-bottom: 10px; }
+/* 최근 5회 당첨번호 목록 */
+.recent { margin: 6px 0 14px; border-top: 1px solid rgba(128,128,128,.25); }
+.recent .row { display: flex; align-items: center; gap: 10px; padding: 7px 0;
+  border-bottom: 1px solid rgba(128,128,128,.18); }
+.recent .rd { min-width: 78px; font-size: 13px; line-height: 1.25; }
+.recent .rd b { font-size: 14px; }
+.recent .rd span { opacity: .6; font-size: 12px; }
+.recent .balls { margin: 0; gap: 4px; flex-wrap: nowrap; }
+.recent .ball { width: 30px; height: 30px; font-size: 13px; }
+.recent .plus { margin: 0 1px; }
 .ticket { padding: 10px 0 12px; border-bottom: 1px dashed rgba(128,128,128,.35); }
 .ticket .label { font-size: 12px; opacity: .65; margin-top: 4px; }
 /* 탭을 손가락으로 가로 스크롤 */
@@ -50,6 +60,9 @@ h1 { font-weight: 800; letter-spacing: -0.02em; }
   h1 { font-size: 1.6rem !important; }
   .ball { width: 34px; height: 34px; font-size: 14px; }
   .balls { gap: 5px; }
+  .recent .rd { min-width: 62px; }
+  .recent .ball { width: 26px; height: 26px; font-size: 11.5px; }
+  .recent .balls { gap: 3px; }
 }
 /* 번호판: 1~45 공을 9열 격자로 나열해 직접 누르기 */
 .st-key-ball_grid [role="toolbar"] { display: grid !important; grid-template-columns: repeat(9, minmax(0, 1fr));
@@ -118,6 +131,22 @@ st.markdown(f'<div class="meta">{int(latest["round"])}회 · {latest["date"]} �
 st.markdown(balls_html(latest[NUM].astype(int).tolist(), int(latest["bonus"])),
             unsafe_allow_html=True)
 st.caption(f'1등 {int(latest["win1_count"])}명 · 1인당 {won(latest["win1_amount"])}')
+
+RECENT_N = 5  # 최근 몇 회까지 보여줄지
+
+
+def recent_html(rows) -> str:
+    out = []
+    for _, r in rows.iterrows():
+        date = str(r["date"])[2:].replace("-", ".")  # 2026-10-24 → 26.10.24
+        out.append(f'<div class="row"><div class="rd"><b>{int(r["round"])}회</b><br>'
+                   f'<span>{date}</span></div>'
+                   f'{balls_html(r[NUM].astype(int).tolist(), int(r["bonus"]))}</div>')
+    return f'<div class="recent">{"".join(out)}</div>'
+
+
+st.markdown(f"**최근 {RECENT_N}회 당첨번호**")
+st.markdown(recent_html(df.iloc[::-1].head(RECENT_N)), unsafe_allow_html=True)
 
 if st.button("🔄 최신 당첨번호 받기", width="stretch"):
     with st.spinner("동행복권에서 받는 중…"):
