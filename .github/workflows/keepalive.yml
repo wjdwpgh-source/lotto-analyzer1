@@ -1,4 +1,3 @@
-yaml
 name: Keep Streamlit awake
 on:
   schedule:
