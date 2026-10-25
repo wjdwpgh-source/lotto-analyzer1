@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
+import streamlit.components.v1 as components
 
 from src import analyzer, backtest, database, generator, probability
 
@@ -88,6 +89,32 @@ h1 { font-weight: 800; letter-spacing: -0.02em; }
 }
 </style>
 """, unsafe_allow_html=True)
+
+
+# ---------------------------------------------------------------- 모바일 확대 허용
+# Streamlit은 기본으로 viewport에 user-scalable=no 를 넣어 폰에서 두 손가락 확대가 막힙니다.
+# 앱 페이지(및 Streamlit Cloud의 바깥 페이지)의 viewport 설정을 확대 가능하게 바꿉니다.
+ZOOM_JS = """<script>
+(function () {
+  var VP = "width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=5, user-scalable=yes";
+  function fix(w) {
+    try {
+      var d = w.document, m = d.querySelector('meta[name="viewport"]');
+      if (!m) { m = d.createElement("meta"); m.name = "viewport"; d.head.appendChild(m); }
+      if (m.content !== VP) m.content = VP;
+    } catch (e) { /* 다른 출처의 바깥 페이지는 건너뜀 */ }
+  }
+  function all() {
+    var w = window;
+    for (var i = 0; i < 5; i++) { fix(w); if (w === w.parent) break; w = w.parent; }
+  }
+  all();
+  setInterval(all, 2000);  // Streamlit이 다시 덮어써도 되돌림
+})();
+</script>"""
+with st.container(key="zoomfix"):  # 화면에 빈 칸이 생기지 않도록 숨김 (스크립트는 동작)
+    components.html(ZOOM_JS, height=0)
+st.markdown("<style>.st-key-zoomfix { display: none; }</style>", unsafe_allow_html=True)
 
 
 def balls_html(nums, bonus=None) -> str:
