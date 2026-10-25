@@ -70,13 +70,18 @@ h1 { font-weight: 800; letter-spacing: -0.02em; }
 .st-key-ball_grid button[data-variant="pills"] { aspect-ratio: 1; width: 100%; min-height: 0; padding: 0;
   border-radius: 50%; justify-content: center; font-weight: 700; }
 .st-key-ball_grid button[data-variant="pills"] p { font-size: 14px; font-weight: 700; }
-.st-key-ball_grid button[aria-pressed="true"] { border-color: transparent; }
-.st-key-ball_grid button[aria-pressed="true"] p { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.35); }
-.st-key-ball_grid button[aria-pressed="true"]:nth-child(-n+10) { background: #FBC400; }
-.st-key-ball_grid button[aria-pressed="true"]:nth-child(n+11):nth-child(-n+20) { background: #69C8F2; }
-.st-key-ball_grid button[aria-pressed="true"]:nth-child(n+21):nth-child(-n+30) { background: #FF7272; }
-.st-key-ball_grid button[aria-pressed="true"]:nth-child(n+31):nth-child(-n+40) { background: #AAAAAA; }
-.st-key-ball_grid button[aria-pressed="true"]:nth-child(n+41) { background: #B0D840; }
+/* 안 누른 공: 다크 모드에서도 검게 보이지 않도록 항상 밝은 회백색 */
+.st-key-ball_grid button[data-variant="pills"] { background: #F1F3F5 !important;
+  border: 1px solid #D5D9DE !important; }
+.st-key-ball_grid button[data-variant="pills"] p { color: #000 !important; }
+.st-key-ball_grid button[data-variant="pills"]:hover { background: #E3E7EB !important; }
+.st-key-ball_grid button[aria-pressed="true"] { border-color: transparent !important; }
+.st-key-ball_grid button[aria-pressed="true"] p { color: #000 !important; text-shadow: 0 1px 1px rgba(255,255,255,.45); }
+.st-key-ball_grid button[aria-pressed="true"]:nth-child(-n+10) { background: #FBC400 !important; }
+.st-key-ball_grid button[aria-pressed="true"]:nth-child(n+11):nth-child(-n+20) { background: #69C8F2 !important; }
+.st-key-ball_grid button[aria-pressed="true"]:nth-child(n+21):nth-child(-n+30) { background: #FF7272 !important; }
+.st-key-ball_grid button[aria-pressed="true"]:nth-child(n+31):nth-child(-n+40) { background: #AAAAAA !important; }
+.st-key-ball_grid button[aria-pressed="true"]:nth-child(n+41) { background: #B0D840 !important; }
 @media (max-width: 640px) {
   .st-key-ball_grid [role="toolbar"] { gap: 4px; }
   .st-key-ball_grid button[data-variant="pills"] p { font-size: 12px; }
